@@ -1,0 +1,76 @@
+api rest sem autenticação na linguagem python
+obrigatorio o uso do framework FastAPI
+banco de dados SQLite
+utilizando o SQLAlchemy como ORM
+
+a aplicação deve promover a integração de duas apis publicas
+Rick and Morty API: com infos sobre os personagens e localidades da serie
+TMDB: filmes e programas de tv
+
+a aplicação deve disponibilizar os seguintes endpoints
+/collect - Consulta as APIs externas e popula o banco de dados da aplicação
+Fica a seu criterio selecionar os dados relevantes de cada uma das APIs,
+mas é fundamental que sejam utilizadas ambas
+
+/voice_actor/list - Lista dubladores que atuam na serie.
+
+/voice_actor/{voice_actor_id}/acted_in - Lista infos de quais eps um
+dublador atuou
+
+diferenciais:
+Implementar filtros nos endpoins
+desenvolver testes unitarios para a aplicação
+
+------------------------------
+
+Agora vamos instalar os pacotes essenciais:
+
+pip install fastapi uvicorn sqlalchemy requests sqlite-utils
+
+Explicando:
+
+fastapi → framework para API.
+
+uvicorn → servidor ASGI para rodar o FastAPI.
+
+sqlalchemy → ORM para trabalhar com SQLite.
+
+requests → para consumir as APIs externas (Rick and Morty e TMDB).
+
+sqlite-utils (opcional) → ajuda a inspecionar dados no SQLite.
+
+-------------------------
+
+1. O que é o SQLAlchemy ORM
+
+Ele transforma tabelas do banco em classes Python.
+
+Cada linha da tabela vira um objeto dessa classe.
+
+Com isso você não escreve SQL "na unha", mas sim interage via objetos (insert, update, select, etc.).
+-------
+No caso do SQLite, você não precisa instalar nada extra,
+ porque ele já vem embutido no Python desde a versão 3.5.
+
+----
+logo parte de Banco de Dados :
+o SQLite ja vem como nativo do Python, o SQLAlchemy é a biblioteca que tranforma em ORM
+
+------
+A pasta routes/ não precisa refletir exatamente as tabelas do banco. 
+Ela serve para organizar os endpoints da API, e você decide como quer agrupar eles.
+
+--
+python things
+no main voce tem que dar um import-> from app.routes import voice_actor
+
+----
+no momento de configurar as rotas voce tem que por o @ em cima da função, use o .get para pode acessar pelo link do navegador ex: 
+http://127.0.0.1:8000/collect
+o .post seria o mais correto -> POST (mais correto para coleta/inserção de dados), mas como não estamos usando um
+Use um cliente HTTP como Insomnia, Postman ou curl para chamar vamos de GET mesmo 
+
+@router.get("/collect") ##aqui esta o @ em cima da função para definir a rota de acesso
+def collect_data(db: Session = Depends(get_db)):
+
+
