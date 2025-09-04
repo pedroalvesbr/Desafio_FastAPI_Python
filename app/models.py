@@ -1,68 +1,72 @@
-from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy import Column, Integer, String, ForeignKey, Table
 from sqlalchemy.orm import relationship
-from app.database import Base
+from app.database import Base  # Supondo que você já tem a instância declarativa Base
 
+# --- Association Table simples: Character <-> Episode ---
+episode_characters = Table(
+    "episode_characters",
+    Base.metadata,
+    Column("id_episode", Integer, ForeignKey("episodes.id"), primary_key=True),
+    Column("id_character", Integer, ForeignKey("characters.id"), primary_key=True)
+)
+
+
+# --- VoiceActor ---
 class VoiceActor(Base):
     __tablename__ = "voice_actors"
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     name = Column(String, index=True)
-    country = Column(String, nullable=True)
-    character = Column(String, nullable=True)
+    tmdb_id = Column(Integer, unique=True, index=True)
+
+    # Relacionamento com personagens via tabela intermediária
+    characters = relationship("VoiceCharacter", back_populates="voice_actor")
 
 
+# --- Character ---
 class Character(Base):
     __tablename__ = "characters"
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     api_id = Column(Integer, unique=True, index=True)
     name = Column(String, index=True)
-    status = Column(String, nullable=True)
-    species = Column(String, nullable=True)
-    gender = Column(String, nullable=True)
 
-    appearances = relationship("Appearance", back_populates="character")
+    # Relacionamento N:N com Episode via tabela simples
+    episodes = relationship(
+        "Episode",
+        secondary=episode_characters,
+        back_populates="characters"
+    )
 
-
-class Location(Base):
-    __tablename__ = "locations"
-
-    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    api_id = Column(Integer, unique=True, index=True)
-    name = Column(String, index=True)
-    dimension = Column(String, nullable=True)
+    # Relacionamento com dubladores via tabela intermediária
+    voice_actors = relationship("VoiceCharacter", back_populates="character")
 
 
-class Show(Base):
-    __tablename__ = "shows"
+# --- VoiceCharacter: Association Table com classe ---
+class VoiceCharacter(Base):
+    __tablename__ = "voice_characters"
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    api_id = Column(Integer, unique=True, index=True)
-    name = Column(String, index=True)
-    first_air_date = Column(String, nullable=True)
+    character_id = Column(Integer, ForeignKey("characters.id"), index=True)
+    voice_actor_id = Column(Integer, ForeignKey("voice_actors.id"), index=True)
 
-    episodes = relationship("Episode", back_populates="show")
+    # Relacionamentos ORM
+    character = relationship("Character", back_populates="voice_actors")
+    voice_actor = relationship("VoiceActor", back_populates="characters")
 
 
-
+# --- Episode ---
 class Episode(Base):
     __tablename__ = "episodes"
 
-    id = Column(Integer, primary_key=True, index=True)
-    name = Column(String, nullable=False)
-    season = Column(Integer, nullable=True)
-    number = Column(Integer, nullable=True)
-    show_id = Column(Integer, ForeignKey("shows.id"))
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    api_id = Column(Integer, unique=True, index=True) 
+    ep_name = Column(String, nullable=False)
+    episode_code = Column(String, nullable=False)  # Ex: "S01E01"
 
-    show = relationship("Show", back_populates="episodes")
-    appearances = relationship("Appearance", back_populates="episode")
-
-class Appearance(Base):
-    __tablename__ = "appearances"
-
-    id = Column(Integer, primary_key=True, index=True)
-    character_id = Column(Integer, ForeignKey("characters.id"))
-    episode_id = Column(Integer, ForeignKey("episodes.id"))
-
-    character = relationship("Character", back_populates="appearances")
-    episode = relationship("Episode", back_populates="appearances")
+    # Relacionamento N:N com Character via tabela simples
+    characters = relationship(
+        "Character",
+        secondary=episode_characters,
+        back_populates="episodes"
+    )

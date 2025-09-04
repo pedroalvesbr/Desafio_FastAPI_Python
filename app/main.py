@@ -1,8 +1,8 @@
 from fastapi import FastAPI
 from app import models
 from app.database import engine
-from app.routes import voice_actor
-from app.routes import collect
+from app.routes import voice_actor, collect
+from app.services_APIs import tmdb
 
 # cria as tabelas no banco (se ainda não existirem)
 models.Base.metadata.create_all(bind=engine)
@@ -24,3 +24,6 @@ app.include_router(voice_actor.router)
 
 # incluir o router do voice_actor.py
 app.include_router(collect.router)
+
+# incluir o router do voice_actor.py
+app.include_router(tmdb.router)
